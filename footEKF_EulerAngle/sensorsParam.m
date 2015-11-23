@@ -33,8 +33,11 @@ end
  
 
 % Foot F/T analog sensor
-
-foot_ft_data  = importdata(strcat(expPath,leg_choice,'_foot/analog:o/data.log'));
+if(strcmp(model.urdf,'icubGazeboSim')==1)
+    foot_ft_data  = importdata(strcat(expPath,leg_choice,'_foot/analog:o/data.log'));
+else
+    foot_ft_data  = importdata(strcat(expPath,leg_choice,'_foot/analog_o/data.log'));
+end
 foot_ft.t = foot_ft_data(:,2)-foot_ft_data(1,2);
 foot_ft.idx = foot_ft_data(:,1) - foot_ft_data(1,1);
 foot_ft.data(:,3:8) = foot_ft_data(:,3:8) - repmat(foot_ft_offset,size(foot_ft_data,1),1);

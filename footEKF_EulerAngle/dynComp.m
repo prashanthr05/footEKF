@@ -6,7 +6,7 @@ dynComp = iDynTree.DynamicsComputations();
 
 %% Load robot urdf
 %Loading urdf of corresponding robot
-loadModel = dynComp.loadRobotModelFromFile(strcat(model.urdf,'.urdf'),'urdf'); % Loading iCubGenova03 model.urdf
+loadModel = dynComp.loadRobotModelFromFile(strcat('model-urdf/',model.urdf,'.urdf'),'urdf'); % Loading iCubGenova03 model.urdf
 regCheck = dynComp.isValid(); %checking if regressor generator is correctly configured
 dofInternal = dynComp.getNrOfDegreesOfFreedom();
 

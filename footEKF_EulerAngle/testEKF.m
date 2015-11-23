@@ -39,6 +39,7 @@ utilities    = genpath('./utils');
 symb         = genpath('./symbolicFunctions');
 dynFuncs     = genpath('./dynamicsFunctions');
 plotFuncs   = genpath('./plotFunctions');
+urdf = genpath('./model-urdf');
 
 addpath(utilities, symb, dynFuncs, plotFuncs)
 
@@ -263,8 +264,8 @@ for j = expID
     
     
     
-    plotFigBaseFolder = sprintf('./plots/%s%s/',processSuffix{j});
-    dataBaseFolder = sprintf('./data/%s%s/',processSuffix{j});
+    plotFigBaseFolder = sprintf('./plots/%s/',processSuffix{j});
+    dataBaseFolder = sprintf('./data/%s/',processSuffix{j});
     
     
     %% Plots
@@ -279,7 +280,7 @@ for j = expID
     end
     
     save(strcat(dataBaseFolder,'filteredResult.mat'),'tKalman','yMeas','Xupdt','Xhat','P','model');
-    save(strcat(dataBaseFolder,'5layersponge1.mat'),'tKalman','yMeas','Xupdt','Xhat','P','model');
+
     if(strcmp(model.filterOutputPlots,'makePlots') == 1)
         plotAndSaveFigs(dataBaseFolder,plotFigBaseFolder,processSuffix{j});
     end
