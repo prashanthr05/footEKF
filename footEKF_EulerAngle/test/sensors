@@ -1,0 +1,87 @@
+function [model,tMax,foot_ft,inertial_a,inertial_omega,transforms] = robotSensorParams_comprehensive(dtKalman,model,t_min,t_max,processType,whichLeg,expPath,expt)
+
+%% Setting path for measurements and reading FT offsets
+if(strcmp(model.urdf,'icubGazeboSim') == 1)
+	expPath = expPath + '/dumper/icubGazeboSim';
+	offsets.FT2 = zeros(1,6);
+	offsets.FT3 = zeros(1,6);
+	offsets.FT4 = zeros(1,6);
+	offsets.FT5 = zeros(1,6);
+else
+	expPath = expPath + '/dumper/icub';
+	[FT2,FT3,FT4,FT5] = readFTOffsets(expPath);
+	offsets.FT2 = FT2;
+	offsets.FT3 = FT3;
+	offsets.FT4 = FT4;
+	offsets.FT5 = FT5;
+end
+
+left_leg_ft_offset = offsets.FT2;
+right_leg_ft_offset = offsets.FT4;
+left_foot_ft_offset = offsets.FT3;
+right_foot_ft_offset = offsets.FT5;
+
+leg_choice  = whichLeg;
+
+if(strcmp(leg_choice,'left')==1)
+    leg_ft_offset = left_leg_ft_offset;
+    foot_ft_offset = left_foot_ft_offset;
+else
+    leg_ft_offset = right_leg_ft_offset;
+    foot_ft_offset = right_foot_ft_offset;
+end
+
+%% Reading Sensor information
+
+% Foot F/T analog sensor
+foot_ft_data  = importdata(strcat(expPath,leg_choice,'_foot/analog:o/data.log'));
+foot_ft.t = foot_ft_data(:,2)-foot_ft_data(1,2);
+foot_ft.idx = foot_ft_data(:,1) - foot_ft_data(1,1);
+foot_ft.data(:,3:8) = foot_ft_data(:,3:8) - repmat(foot_ft_offset,size(foot_ft_data,1),1);
+foot_ft.f = foot_ft.data(:,3:5);
+foot_ft.mu = foot_ft.data(:,6:8);
+
+% inertial sensor
+if(strcmp(model.urdf,'icubGazeboSim') == 1)
+	inertial_data = importdata(strcat(expPath,leg_choice,'_foot_IMU/data.log'));
+	inertial_a.t = inertial_data(:,2)-inertial_data(1,2);
+	inertial_a.data = inertial_data(:,6:8);
+
+	inertial_omega.t = inertial_data(:,2)-inertial_data(1,2);
+	inertial_omega.data = inertial_data(:,9:11);
+else
+	inertial_data = importdata(strcat(expPath,'right_leg/inertialMTB/data.log'));
+	
+	inertial_a.t = inertial_data(:,13)-inertial_data(1,13);
+	inertial_a.data = inertial_data(:,11:16);
+
+	inertial_omega.t = inertial_data(:,25)-inertial_data(1,25);
+	inertial_omega.data = inertial_data(:,23:28);
+end
+
+ttmp = linspace(foot_ft.t(1),foot_ft.t(end),length(inertial_a.t));
+inertial_a.data = interp1(ttmp,inertial_a.data,foot_ft.t);
+inertial_a.t = foot_ft.t;
+
+ttmp = linspace(foot_ft.t(1),foot_ft.t(end),length(inertial_omega.t));
+inertial_omega.data = interp1(ttmp,inertial_omega.data,foot_ft.t);
+inertial_omega.t = foot_ft.t;
+
+%% Transformation between IMU sensor frame and body coordinate frame located at CoM
+% com_R_imu = computeOptimalIMURotation(dataSet,numberOfExperiment,a_mean,'noPlots','on');
+% TODO - use function call
+load('com_R_imu.mat','com_R_imu');
+transforms.B_R_imu = com_R_imu;
+
+[model,transforms] = dynComputations_foot(model,inertial_a,inertial_omega,transforms,leg_choice,expPath,t_max,dtKalman);
+
+
+%% world gravity
+model.B0_g = [0;0;9.8];
+model.phi0 = [0; pi/2; 0];
+G_R_B = euler2dcm(model.phi0);
+model.G_g = G_R_B*model.B0_g;
+
+
+%%
+tMax = min([foot_ft.t(end),inertial_a.t(end),inertial_omega.t(end),t_max]);

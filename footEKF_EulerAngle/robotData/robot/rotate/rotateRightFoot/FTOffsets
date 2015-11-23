@@ -1,0 +1,4 @@
+[INFO]wholeBodyDynamicsThread: new calibration for FT  l_leg_ft_sensor  is   40.203703	 115.154642	-4.935752	 3.049048	-1.614008	-0.169563 
+[INFO]wholeBodyDynamicsThread: new calibration for FT  l_foot_ft_sensor  is   7.493746	-38.630454	 19.509934	-0.824174	-0.694368	 0.168369 
+[INFO]wholeBodyDynamicsThread: new calibration for FT  r_leg_ft_sensor  is  -8.097635	-51.830853	-24.802319	-1.074421	-1.722987	 0.042469 
+[INFO]wholeBodyDynamicsThread: new calibration for FT  r_foot_ft_sensor  is   5.988046	-19.921825	 14.219821	-0.511386	-0.351213	 0.095649
